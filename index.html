@@ -2,157 +2,59 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>finding myself - Zhang Yangfei</title>
+    <title>finding myself</title>
     <style>
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #fff;
-            cursor: none; /* 隐藏原生鼠标 */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; color: #fff; cursor: none; }
+        .base-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.05; filter: grayscale(100%); transition: background-image 0.8s; }
+        .spotlight { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 0.8s;
+            --mask: radial-gradient(circle 160px at var(--x, -500px) var(--y, -500px), black 0%, black 60%, transparent 100%);
+            -webkit-mask-image: var(--mask); mask-image: var(--mask);
         }
-
-        /* 基础背景层：极暗 (0.05) */
-        .base-background {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0.05; 
-            filter: grayscale(100%);
-            transition: background-image 0.8s ease-in-out;
-        }
-
-        /* 探照灯高亮层 */
-        .spotlight-layer {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            z-index: 2;
-            pointer-events: none;
-            
-            --radius: 160px;
-            --mask: radial-gradient(
-                circle var(--radius) at var(--x, -500px) var(--y, -500px), 
-                black 0%, 
-                black 60%, 
-                transparent 100%
-            );
-            -webkit-mask-image: var(--mask);
-            mask-image: var(--mask);
-            transition: opacity 0.8s ease-in-out;
-            opacity: 0;
-        }
-
-        .spotlight-layer.active {
-            opacity: 1;
-        }
-
-        /* UI 文本 */
-        .ui-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 10;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            pointer-events: none;
-        }
-
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            letter-spacing: 4px; 
-            font-size: 11px; 
-            text-transform: uppercase; 
-            opacity: 0.6;
-        }
-
-        .instruction {
-            width: 100%;
-            text-align: center;
-            font-size: 9px;
-            letter-spacing: 3px;
-            opacity: 0.2;
-            margin-bottom: 10px;
-        }
+        .active { opacity: 1; }
+        .ui { position: fixed; inset: 0; z-index: 10; padding: 40px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+        .header { display: flex; justify-content: space-between; letter-spacing: 4px; font-size: 11px; text-transform: uppercase; opacity: 0.6; }
     </style>
 </head>
 <body>
-
-    <div id="base-bg" class="base-background"></div>
+    <div id="base" class="base-bg"></div>
     <div id="gallery"></div>
-
-    <div class="ui-overlay">
+    <div class="ui">
         <div class="header">
             <div style="font-style: italic;">finding myself</div>
             <div>12431104 Zhang Yangfei</div>
         </div>
-        <div class="instruction">CLICK TO SHIFT VIEW</div>
     </div>
 
     <script>
-        // 1. 自动生成 1-12 张图片的路径
-        // 注意：如果你的图片后缀是 .png，请把下面的 .jpg 改成 .png
-        const myImages = Array.from({length: 12}, (_, i) => `images/${i + 1}.jpg`);
+        // 这里直接读取 images 文件夹下的 1.jpg 到 12.jpg
+        const imgs = Array.from({length: 12}, (_, i) => `images/${i + 1}.jpg`);
+        let cur = 0;
+        const gal = document.getElementById('gallery');
+        const bbg = document.getElementById('base');
 
-        let currentIndex = 0;
-        const gallery = document.getElementById('gallery');
-        const baseBg = document.getElementById('base-bg');
-
-        // 2. 初始化并预加载
         function init() {
-            myImages.forEach((src, idx) => {
-                const div = document.createElement('div');
-                div.className = `spotlight-layer ${idx === 0 ? 'active' : ''}`;
-                div.style.backgroundImage = `url('${src}')`;
-                gallery.appendChild(div);
-                
-                // 预加载图片到浏览器缓存
-                const img = new Image();
-                img.src = src;
+            imgs.forEach((src, i) => {
+                const d = document.createElement('div');
+                d.className = `spotlight ${i === 0 ? 'active' : ''}`;
+                d.style.backgroundImage = `url('${src}')`;
+                gal.appendChild(d);
             });
-            updateView();
+            show();
         }
 
-        function updateView() {
-            const layers = document.querySelectorAll('.spotlight-layer');
-            layers.forEach((layer, idx) => {
-                layer.classList.toggle('active', idx === currentIndex);
-            });
-            baseBg.style.backgroundImage = `url('${myImages[currentIndex]}')`;
+        function show() {
+            const ls = document.querySelectorAll('.spotlight');
+            ls.forEach((l, i) => l.classList.toggle('active', i === cur));
+            bbg.style.backgroundImage = `url('${imgs[cur]}')`;
         }
 
-        // 3. 点击切换
-        document.addEventListener('mousedown', () => {
-            currentIndex = (currentIndex + 1) % myImages.length;
-            updateView();
-            
-            // 点击视觉反馈
-            const layers = document.querySelectorAll('.spotlight-layer');
-            layers.forEach(l => l.style.setProperty('--radius', '145px'));
-            setTimeout(() => {
-                layers.forEach(l => l.style.setProperty('--radius', '160px'));
-            }, 100);
-        });
-
-        // 4. 鼠标追踪
+        document.addEventListener('mousedown', () => { cur = (cur + 1) % imgs.length; show(); });
         document.addEventListener('mousemove', (e) => {
-            const x = e.clientX + 'px';
-            const y = e.clientY + 'px';
-            document.querySelectorAll('.spotlight-layer').forEach(layer => {
-                layer.style.setProperty('--x', x);
-                layer.style.setProperty('--y', y);
+            const x = e.clientX + 'px', y = e.clientY + 'px';
+            document.querySelectorAll('.spotlight').forEach(l => {
+                l.style.setProperty('--x', x); l.style.setProperty('--y', y);
             });
         });
-
         init();
     </script>
 </body>
