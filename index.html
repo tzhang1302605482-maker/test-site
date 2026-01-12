@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>finding myself - Gallery</title>
+    <title>finding myself - Zhang Yangfei</title>
     <style>
         body, html {
             margin: 0; padding: 0;
@@ -12,11 +12,10 @@
             background-color: #000;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             color: #fff;
-            /* 1. 隐藏原生鼠标 */
-            cursor: none; 
+            cursor: none; /* 隐藏原生鼠标 */
         }
 
-        /* 2. 基础背景层：极暗显示 (0.05) */
+        /* 基础背景层：极暗 (0.05) */
         .base-background {
             position: absolute;
             top: 0; left: 0;
@@ -24,11 +23,11 @@
             background-size: cover;
             background-position: center;
             opacity: 0.05; 
-            filter: grayscale(100%); /* 全灰度增加压抑感/潮流感 */
+            filter: grayscale(100%);
             transition: background-image 0.8s ease-in-out;
         }
 
-        /* 3. 探照灯高亮层 */
+        /* 探照灯高亮层 */
         .spotlight-layer {
             position: absolute;
             top: 0; left: 0;
@@ -55,7 +54,7 @@
             opacity: 1;
         }
 
-        /* UI 装饰层 */
+        /* UI 文本 */
         .ui-overlay {
             position: fixed;
             inset: 0;
@@ -73,16 +72,7 @@
             letter-spacing: 4px; 
             font-size: 11px; 
             text-transform: uppercase; 
-            opacity: 0.6; /* 稍微提升一点文字清晰度 */
-        }
-
-        .title-left {
-            font-style: italic;
-            font-weight: 300;
-        }
-
-        .id-right {
-            font-weight: 200;
+            opacity: 0.6;
         }
 
         .instruction {
@@ -98,47 +88,36 @@
 <body>
 
     <div id="base-bg" class="base-background"></div>
-    
     <div id="gallery"></div>
 
     <div class="ui-overlay">
         <div class="header">
-            <div class="title-left">finding myself</div>
-            <div class="id-right">12431104 Zhang Yangfei</div>
+            <div style="font-style: italic;">finding myself</div>
+            <div>12431104 Zhang Yangfei</div>
         </div>
-        <div class="instruction">TAP TO EXPLORE</div>
+        <div class="instruction">CLICK TO SHIFT VIEW</div>
     </div>
 
     <script>
-        /**
-         * 照片管理：在这里自定义你的照片数量
-         */
-       const myImages = [
-    'images/1.jpg',
-    'images/2.jpg',
-             'images/3.jpg',
-    'images/4.jpg',  
-           'images/5.jpg',
-    'images/6.jpg', 
-           'images/7.jpg',
-    'images/8.jpg', 
-           'images/9.jpg',
-    'images/10.jpg',
-                'images/11.jpg',
-    'images/12.jpg'
-];
+        // 1. 自动生成 1-12 张图片的路径
+        // 注意：如果你的图片后缀是 .png，请把下面的 .jpg 改成 .png
+        const myImages = Array.from({length: 12}, (_, i) => `images/${i + 1}.jpg`);
 
         let currentIndex = 0;
         const gallery = document.getElementById('gallery');
         const baseBg = document.getElementById('base-bg');
 
-        // 初始化
+        // 2. 初始化并预加载
         function init() {
             myImages.forEach((src, idx) => {
                 const div = document.createElement('div');
                 div.className = `spotlight-layer ${idx === 0 ? 'active' : ''}`;
                 div.style.backgroundImage = `url('${src}')`;
                 gallery.appendChild(div);
+                
+                // 预加载图片到浏览器缓存
+                const img = new Image();
+                img.src = src;
             });
             updateView();
         }
@@ -151,12 +130,12 @@
             baseBg.style.backgroundImage = `url('${myImages[currentIndex]}')`;
         }
 
-        // 交互逻辑
+        // 3. 点击切换
         document.addEventListener('mousedown', () => {
             currentIndex = (currentIndex + 1) % myImages.length;
             updateView();
             
-            // 点击时的圆圈缩放反馈
+            // 点击视觉反馈
             const layers = document.querySelectorAll('.spotlight-layer');
             layers.forEach(l => l.style.setProperty('--radius', '145px'));
             setTimeout(() => {
@@ -164,6 +143,7 @@
             }, 100);
         });
 
+        // 4. 鼠标追踪
         document.addEventListener('mousemove', (e) => {
             const x = e.clientX + 'px';
             const y = e.clientY + 'px';
@@ -177,4 +157,3 @@
     </script>
 </body>
 </html>
-
